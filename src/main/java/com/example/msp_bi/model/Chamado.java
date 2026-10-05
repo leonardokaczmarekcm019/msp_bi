@@ -3,12 +3,19 @@ package com.example.msp_bi.model;
 import java.util.Date;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+@Entity
+@Table(name = "chamado")
 public class Chamado {
 
     @Id
@@ -47,13 +54,12 @@ public class Chamado {
     @Column(nullable = true)
     private Date data_conclusao;
 
-    @Column(nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "solicitante_id", nullable = false)
     private Usuario solicitante;
 
-    @Column(nullable = true)
+    @OneToOne
+    @JoinColumn(name = "tecnico_id")
     private Usuario tecnico;
 
 }
-
-"Um chamado é aberto por um solicitante"
-"O técnico trabalha em vários chamados"

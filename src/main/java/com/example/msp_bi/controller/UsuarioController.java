@@ -12,9 +12,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.msp_bi.repository.UsuarioRepository;
+import com.example.msp_bi.repository.TarefaRepository;
 import com.example.msp_bi.model.Usuario;    
 
 import jakarta.validation.Valid;
+
+
 
 
 @RestController
@@ -22,10 +25,16 @@ import jakarta.validation.Valid;
 public class UsuarioController {
     
     private final UsuarioRepository repository;
+    private final TarefaRepository tarefaRepository;
 
-    public UsuarioController(UsuarioRepository repository) {
+    public UsuarioController(
+            UsuarioRepository repository,
+            TarefaRepository tarefaRepository) {
+
         this.repository = repository;
+        this.tarefaRepository = tarefaRepository;
     }
+
 
     @GetMapping
     public List<Usuario> listar() {
@@ -54,25 +63,23 @@ public class UsuarioController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Usuario> atualizar(
-            @PathVariable Long id,
-            @Valid @RequestBody Usuario dados) {
+    @PutMapping("/{usuarioId}/tarefa/{tarefaId}")
+    public ResponseEntity<Usuario> adicionarTarefa(
+            @PathVariable Long usuarioId,
+            @PathVariable Long tarefaId) {
 
-        return repository.findById(id)
-                .map(usuario -> {
+        var usuario = repository.findById(usuarioId);
+        var tarefa = tarefaRepository.findById(tarefaId);
 
-                    usuario.setNome(dados.getNome());
-                    usuario.setEmail(dados.getEmail());
-                    usuario.setNumero(dados.getNumero());
-                    usuario.setAtivo(dados.getAtivo());
+        if (usuario.isEmpty() || tarefa.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
 
-                    Usuario atualizado = repository.save(usuario);
+        usuario.get().setTarefa(tarefa.get());
 
-                    return ResponseEntity.ok(atualizado);
+        Usuario atualizado = repository.save(usuario.get());
 
-                })
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(atualizado);
     }
 
     @DeleteMapping("/{id}")

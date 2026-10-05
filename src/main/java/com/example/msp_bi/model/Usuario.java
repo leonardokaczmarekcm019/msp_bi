@@ -7,8 +7,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-
-import org.springframework.web.bind.annotation.GetMapping;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
@@ -45,5 +45,9 @@ public class Usuario {
 
     @Column(nullable = false)
     private Boolean ativo;
+
+    @OneToOne
+    @JoinColumn(name = "tarefa_id")
+    private Tarefa tarefa;
         
 }
