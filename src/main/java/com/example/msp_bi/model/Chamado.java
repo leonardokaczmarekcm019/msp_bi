@@ -1,5 +1,7 @@
 package com.example.msp_bi.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Date;
 
 import jakarta.persistence.Column;
@@ -8,7 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
@@ -54,12 +56,21 @@ public class Chamado {
     @Column(nullable = true)
     private Date data_conclusao;
 
-    @ManyToOne
-    @JoinColumn(name = "solicitante_id", nullable = false)
+    @OneToOne 
+    @JoinColumn(name = "solicitante_id")
     private Usuario solicitante;
 
     @OneToOne
-    @JoinColumn(name = "tecnico_id")
-    private Usuario tecnico;
+    @JoinColumn(name = "tipo_chamado_id")
+    private TipoChamado tipoChamado;
+
+    @OneToOne
+    @JoinColumn(name = "categoria_id")
+    private CategoriaChamado categoriaChamado;
+
+    @OneToOne
+    @JoinColumn(name = "prioridade_chamado_id")
+    private PrioridadeChamado prioridadeChamado;
+
 
 }

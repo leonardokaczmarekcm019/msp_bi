@@ -16,7 +16,7 @@ public class CategoriaChamado {
     @Column(nullable = false)
     private String nome;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String descricao;
     
 }

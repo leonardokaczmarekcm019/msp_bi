@@ -7,7 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Entity;
 
 @Entity 
-public class TipoAmbientTI {
+public class TipoAmbienteTI {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

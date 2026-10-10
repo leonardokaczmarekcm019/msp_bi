@@ -15,5 +15,5 @@ public class Bairro {
 
     @Column(nullable = false)
     private String nome;
-    
+
 }

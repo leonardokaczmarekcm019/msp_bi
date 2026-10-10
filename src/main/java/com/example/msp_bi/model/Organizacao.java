@@ -4,7 +4,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Entity;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity 
 public class Organizacao {
@@ -15,5 +18,23 @@ public class Organizacao {
 
     @Column(nullable = false)
     private String nome;
-    
+
+    @Column(nullable = true)
+    private String cnpj;
+
+    @Column(nullable = true)
+    private String email;
+
+    @Column(nullable = true)
+    private String telefone;
+
+    @Column(nullable = true)
+    private String logo;
+
+    @Column(nullable = false)
+    private Boolean ativo;
+
+    @OneToMany(mappedBy = "organizacao")
+    private List<FonteDados> fontesDados = new ArrayList<>();
+
 }

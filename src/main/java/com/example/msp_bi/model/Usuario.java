@@ -8,7 +8,10 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import java.util.List;
+import java.util.ArrayList;
 
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
@@ -47,7 +50,10 @@ public class Usuario {
     private Boolean ativo;
 
     @OneToOne
-    @JoinColumn(name = "tarefa_id")
-    private Tarefa tarefa;
-        
+    @JoinColumn(name = "tipo_usuario_id")
+    private TipoUsuario tipoUsuario;
+
+    @OneToMany(mappedBy = "usuario")
+    private List<Tarefa> tarefas = new ArrayList<>();
+
 }
