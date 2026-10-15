@@ -1,5 +1,6 @@
 package com.example.msp_bi.model;
-
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
@@ -17,18 +18,20 @@ public class FonteDados {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "O campo plataforma é obrigatório")
+    @Size(max = 50, message = "A plataforma deve ter até 50 caracteres")
     @Column(nullable = false)
     private String plataforma;
 
+    @Size(max = 100, message = "A descrição deve ter até 100 caracteres")
     @Column(nullable = true)
     private String descricao;
 
+    @Size(max = 100, message = "A URL de acesso deve ter até 100 caracteres")
     @Column(nullable = true)
-    private String chave_api;
+    private String url;
 
-    @Column(nullable = true)
-    private String url_acesso;
-
+    @NotBlank(message = "O campo ativo é obrigatório")
     @Column(nullable = false)
     private Boolean ativo;
 

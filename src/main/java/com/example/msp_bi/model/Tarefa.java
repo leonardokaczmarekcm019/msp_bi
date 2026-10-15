@@ -16,13 +16,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "tarefa") 
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class Tarefa {
 
 
@@ -30,13 +31,17 @@ public class Tarefa {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @NotBlank(message = "O campo nome é obrigatório")
+    @Size(max = 50, message = "O nome deve ter até 50 caracteres")
+    @Column(nullable = false)
     private String nome;
 
-    @Column(nullable = true, length = 300)
+    @Size(max = 100, message = "A descrição deve ter até 100 caracteres")
+    @Column(nullable = true)
     private String descricao;
 
-    @Column(nullable = true, length = 50)
+    @Size(max = 50, message = "A prioridade deve ter até 50 caracteres")
+    @Column(nullable = true)
     private String prioridade;
 
     @Column(nullable = true)
@@ -45,7 +50,8 @@ public class Tarefa {
     @Column(nullable = true)
     private Double porcentagem_progresso;
 
-    @Column(nullable = true)
+    @NotBlank(message = "O campo data de criação é obrigatório")
+    @Column(nullable = false)
     private Date data_criacao;
     
     @Column(nullable = true)

@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.ArrayList;
 
 import jakarta.persistence.Column;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,7 +23,6 @@ import lombok.Setter;
 @Getter
 @Setter 
 @NoArgsConstructor 
-@AllArgsConstructor
 public class Usuario {
 
     @Id
@@ -32,20 +30,21 @@ public class Usuario {
     private Long id;
 
     @NotBlank(message = "O nome é obrigatório")
-    @Size (min = 3, max = 100, message = "O nome deve ter entre 3 e 100 caracteres")
-    @Column(nullable = false, length = 100) 
+    @Size (max = 100, message = "O nome deve ter até 100 caracteres")
+    @Column(nullable = false, length = 100)
     private String nome;
 
     @NotBlank(message = "O email é obrigatório")
-    @Size (min = 3, max = 100, message = "O email deve ter entre 3 e 100 caracteres")
-    @Column(nullable = false, length = 100) 
+    @Size (max = 100, message = "O email deve ter até 100 caracteres")
+    @Column(nullable = false, length = 100)
     private String email;
 
     @NotBlank(message = "O número é obrigatório")
-    @Size (min = 3, max = 15, message = "O número deve ter entre 3 e 15 caracteres")
+    @Size ( max = 50, message = "O número deve ter 50 caracteres")
     @Column(nullable = false, length = 15) 
     private String numero;
 
+    @NotBlank(message = "O status é obrigatório")
     @Column(nullable = false)
     private Boolean ativo;
 

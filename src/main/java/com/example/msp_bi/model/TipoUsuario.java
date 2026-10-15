@@ -5,6 +5,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Entity;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity 
 public class TipoUsuario {
@@ -13,7 +15,17 @@ public class TipoUsuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "O campo nome é obrigatório")
+    @Size(max = 50, message = "O nome deve ter até 50 caracteres")
     @Column(nullable = false)
     private String nome;
+
+    @Size(max = 100, message = "A descrição deve ter até 100 caracteres")
+    @Column(nullable = true)
+    private String descricao;
+
+    @NotBlank(message = "O campo autenticação é obrigatório")
+    @Column(nullable = false)
+    private Boolean autenticacao;
     
 }
