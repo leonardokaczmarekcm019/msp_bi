@@ -5,6 +5,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -19,5 +22,10 @@ public class CategoriaTarefa {
     @Size (max = 50, message = "O nome deve ter até 50 caracteres")
     @Column(nullable = false)
     private String nome;
+
+    @ManyToOne
+    @JoinColumn(name = "quadro_tarefa_id")
+    @JsonIgnore
+    private QuadroTarefa quadroTarefa;
     
 }

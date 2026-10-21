@@ -6,7 +6,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Entity;
 
 @Entity 
@@ -33,11 +33,11 @@ public class Dispositivo {
     @Column(nullable = true)
     private String url;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(nullable = false)
     private Modelo modelo;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(nullable = false)
     private Fabricante fabricante;
     

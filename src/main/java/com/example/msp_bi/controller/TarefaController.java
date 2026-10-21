@@ -61,7 +61,7 @@ public class TarefaController {
             return ResponseEntity.notFound().build();
         }
 
-        tarefa.get().setUsuario(usuario.get());
+        tarefa.get().getTecnicos().add(usuario.get());
 
         Tarefa atualizado = repository.save(tarefa.get());
 

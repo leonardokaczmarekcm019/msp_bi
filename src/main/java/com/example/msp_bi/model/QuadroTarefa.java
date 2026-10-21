@@ -7,6 +7,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity 
 public class QuadroTarefa {
@@ -19,5 +22,10 @@ public class QuadroTarefa {
     @Size(max = 50, message = "O nome deve ter até 50 caracteres")
     @Column(nullable = false)
     private String nome;
+
+    @ManyToOne
+    @JoinColumn(name = "fonte_dados_id")
+    @JsonIgnore
+    private FonteDados fonteDados;
     
 }

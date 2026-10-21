@@ -6,9 +6,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity 
+@Getter
+@Setter
 public class TipoUsuario {
 
     @Id
@@ -24,7 +29,7 @@ public class TipoUsuario {
     @Column(nullable = true)
     private String descricao;
 
-    @NotBlank(message = "O campo autenticação é obrigatório")
+    @NotNull(message = "O campo autenticação é obrigatório")
     @Column(nullable = false)
     private Boolean autenticacao;
     

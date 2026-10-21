@@ -6,10 +6,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -44,15 +46,16 @@ public class Usuario {
     @Column(nullable = false, length = 15) 
     private String numero;
 
-    @NotBlank(message = "O status é obrigatório")
+    @NotNull(message = "O status é obrigatório")
     @Column(nullable = false)
     private Boolean ativo;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "tipo_usuario_id")
     private TipoUsuario tipoUsuario;
 
-    @OneToMany(mappedBy = "usuario")
+    @ManyToMany(mappedBy = "tecnicos")
+    @JsonIgnore
     private List<Tarefa> tarefas = new ArrayList<>();
 
 }

@@ -8,10 +8,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -61,28 +61,28 @@ public class Chamado {
     @Column(nullable = true)
     private Date data_conclusao;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "solicitante_id")
     private Usuario solicitante;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "tipo_chamado_id")
     private TipoChamado tipoChamado;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "categoria_id")
     private CategoriaChamado categoriaChamado;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "prioridade_chamado_id")
     private PrioridadeChamado prioridadeChamado;
 
-    @ManyToMany
-    @JoinTable(
-        name = "tecnico_chamado",
-        joinColumns = @JoinColumn(name = "chamado_id"),
-        inverseJoinColumns = @JoinColumn(name = "usuario_id")
-    )
-    private List<Usuario> tecnicos;
+    @ManyToOne
+    @JoinColumn(name = "fonte_dados_id")
+    private FonteDados fonteDados;
+
+    @OneToMany(mappedBy = "chamado")
+    @JsonIgnore
+    private List<ChamadoTecnico> tecnicos;
 
 }

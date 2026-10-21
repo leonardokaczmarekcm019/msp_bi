@@ -5,7 +5,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import java.util.Date;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -39,16 +39,20 @@ public class Alerta {
     @Column(nullable = false)
     private Boolean notificacao;
 
-    @OneToOne 
+    @ManyToOne 
     @JoinColumn(nullable = false, name = "tipo_alerta_id")
     private TipoAlerta tipoAlerta;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(nullable = true, name = "dispositivo_id")
     private Dispositivo dispositivo;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(nullable = true, name = "servico_rede_id")
     private ServicoRede servicoRede;
+
+    @ManyToOne
+    @JoinColumn(name = "fonte_dados_id")
+    private FonteDados fonteDados;
 
 }

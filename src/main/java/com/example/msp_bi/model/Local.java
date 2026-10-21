@@ -8,9 +8,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Entity;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity 
+@Getter
+@Setter
 public class Local {
 
     @Id
@@ -32,19 +36,19 @@ public class Local {
     @Column(nullable = false)
     private String numero;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(nullable = false)
     private Bairro bairro;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(nullable = false)
     private Cidade cidade;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(nullable = false)
     private Estado estado;
 
-    @OneToOne 
+    @ManyToOne 
     @JoinColumn(nullable = false)
     private Organizacao organizacao;
 
