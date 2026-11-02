@@ -6,7 +6,7 @@ function Login({ aoEntrar }: { aoEntrar: (email: string) => void }) {
   return (
     <div className="login">
       <h1>MSP BI</h1>
-      <p>Digite seu e-mail para receber o código de acesso.</p>
+      <p>Digite seu e-mail para realizar oacesso.</p>
       <input
         placeholder="E-mail"
         value={email}
