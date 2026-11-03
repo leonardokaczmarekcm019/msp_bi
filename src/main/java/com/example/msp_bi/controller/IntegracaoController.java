@@ -51,7 +51,13 @@ public class IntegracaoController {
         }
 
         integracao.setId(null);
-        integracao.setWebhookToken(null);
+
+        if (integracao.getTipo() == Integracao.Tipo.WEBHOOK) {
+            integracao.setWebhookToken(java.util.UUID.randomUUID().toString());
+        } else {
+            integracao.setWebhookToken(null);
+        }
+
         integracao.setFonteDados(fonte.get());
 
         return ResponseEntity
