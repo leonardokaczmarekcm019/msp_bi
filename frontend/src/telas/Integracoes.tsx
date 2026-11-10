@@ -1,4 +1,7 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { mensagemErro, mensagemExcecao, requisicao } from "../api";
+
+type TipoIntegracao = "API" | "WEBHOOK";
 
 type FonteDados = {
   id: number;
@@ -8,17 +11,16 @@ type FonteDados = {
 
 type Integracao = {
   id: number;
-  tipo: string;
+  tipo: TipoIntegracao;
   url: string | null;
   autenticacao: string | null;
   usuario: string | null;
-  tokenUrl: string | null;
-  escopo: string | null;
+  webhookToken: string | null;
   mapeamento: string | null;
   ativo: boolean;
 };
 
-function Integracoes() {
+function Integracoes({ autorizacao }: { autorizacao: string }) {
   const [fontes, setFontes] = useState<FonteDados[]>([]);
   const [fonteId, setFonteId] = useState("");
   const [integracoes, setIntegracoes] = useState<Integracao[]>([]);
@@ -27,29 +29,22 @@ function Integracoes() {
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [modalAberto, setModalAberto] = useState(false);
 
-  const [tipo, setTipo] = useState("API");
+  const [tipo, setTipo] = useState<TipoIntegracao>("API");
   const [url, setUrl] = useState("");
-  const [autenticacao, setAutenticacao] = useState("NENHUMA");
   const [usuario, setUsuario] = useState("");
   const [segredo, setSegredo] = useState("");
-  const [tokenUrl, setTokenUrl] = useState("");
-  const [escopo, setEscopo] = useState("");
   const [mapeamento, setMapeamento] = useState("");
   const [ativo, setAtivo] = useState(true);
 
-  async function carregarFontes() {
-    try {
-      const resposta = await fetch("/api/fontes-dados");
-
-      if (!resposta.ok) {
-        throw new Error();
-      }
-
-      setFontes(await resposta.json());
-    } catch {
-      setErro("Não foi possível carregar as fontes de dados.");
-    }
-  }
+  const carregarFontes = useCallback(() => {
+    requisicao("/api/fontes-dados", autorizacao)
+      .then((resposta) => {
+        if (!resposta.ok) throw new Error();
+        return resposta.json();
+      })
+      .then(setFontes)
+      .catch(() => setErro("Não foi possível carregar as fontes de dados."));
+  }, [autorizacao]);
 
   async function carregar(id: string) {
     if (!id) {
@@ -60,7 +55,10 @@ function Integracoes() {
     setCarregando(true);
 
     try {
-      const resposta = await fetch(`/api/fontes-dados/${id}/integracoes`);
+      const resposta = await requisicao(
+        `/api/fontes-dados/${id}/integracoes`,
+        autorizacao,
+      );
 
       if (!resposta.ok) {
         throw new Error();
@@ -76,7 +74,7 @@ function Integracoes() {
 
   useEffect(() => {
     carregarFontes();
-  }, []);
+  }, [carregarFontes]);
 
   function escolherFonte(id: string) {
     setErro("");
@@ -84,15 +82,18 @@ function Integracoes() {
     carregar(id);
   }
 
+  function alterarTipo(valor: string) {
+    if (valor === "API" || valor === "WEBHOOK") {
+      setTipo(valor);
+    }
+  }
+
   function limparFormulario() {
     setEditandoId(null);
     setTipo("API");
     setUrl("");
-    setAutenticacao("NENHUMA");
     setUsuario("");
     setSegredo("");
-    setTokenUrl("");
-    setEscopo("");
     setMapeamento("");
     setAtivo(true);
     setModalAberto(false);
@@ -112,30 +113,31 @@ function Integracoes() {
       ? `/api/fontes-dados/${fonteId}/integracoes/${editandoId}`
       : `/api/fontes-dados/${fonteId}/integracoes`;
 
-    const resposta = await fetch(endereco, {
-      method: editandoId ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tipo,
-        url: url || null,
-        autenticacao,
-        usuario: usuario || null,
-        segredo: segredo || null,
-        tokenUrl: tokenUrl || null,
-        escopo: escopo || null,
-        mapeamento: mapeamento || null,
-        ativo,
-      }),
-    });
+    try {
+      const resposta = await requisicao(endereco, autorizacao, {
+        method: editandoId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo,
+          url: tipo === "API" ? url || null : null,
+          autenticacao: tipo === "API" ? "BASIC" : null,
+          usuario: tipo === "API" ? usuario || null : null,
+          segredo: tipo === "API" ? segredo || null : null,
+          mapeamento: tipo === "API" ? mapeamento || null : null,
+          ativo,
+        }),
+      });
 
-    if (!resposta.ok) {
-      const dados = await resposta.json();
-      setErro(dados.errors?.join(", ") || "Erro ao salvar.");
-      return;
+      if (!resposta.ok) {
+        setErro(await mensagemErro(resposta, "Erro ao salvar"));
+        return;
+      }
+
+      limparFormulario();
+      carregar(fonteId);
+    } catch (erro) {
+      setErro(mensagemExcecao(erro));
     }
-
-    limparFormulario();
-    carregar(fonteId);
   }
 
   function editar(integracao: Integracao) {
@@ -143,11 +145,8 @@ function Integracoes() {
     setEditandoId(integracao.id);
     setTipo(integracao.tipo);
     setUrl(integracao.url || "");
-    setAutenticacao(integracao.autenticacao || "NENHUMA");
     setUsuario(integracao.usuario || "");
     setSegredo("");
-    setTokenUrl(integracao.tokenUrl || "");
-    setEscopo(integracao.escopo || "");
     setMapeamento(integracao.mapeamento || "");
     setAtivo(integracao.ativo);
     setModalAberto(true);
@@ -160,17 +159,32 @@ function Integracoes() {
 
     setErro("");
 
-    const resposta = await fetch(
-      `/api/fontes-dados/${fonteId}/integracoes/${id}`,
-      { method: "DELETE" }
-    );
+    try {
+      const resposta = await requisicao(
+        `/api/fontes-dados/${fonteId}/integracoes/${id}`,
+        autorizacao,
+        { method: "DELETE" },
+      );
 
-    if (!resposta.ok) {
-      setErro("Não foi possível excluir a integração.");
-      return;
+      if (!resposta.ok) {
+        setErro(
+          await mensagemErro(resposta, "Não foi possível excluir a integração"),
+        );
+        return;
+      }
+
+      carregar(fonteId);
+    } catch (erro) {
+      setErro(mensagemExcecao(erro));
+    }
+  }
+
+  function endpointWebhook(integracao: Integracao) {
+    if (!integracao.webhookToken) {
+      return "Token indisponível";
     }
 
-    carregar(fonteId);
+    return `${window.location.origin}/api/webhooks/${integracao.webhookToken}`;
   }
 
   return (
@@ -193,52 +207,58 @@ function Integracoes() {
           <form className="modal" onSubmit={salvar}>
             <h3>{editandoId ? "Editar integração" : "Nova integração"}</h3>
 
-            <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
-              <option value="API">API</option>
-              <option value="WEBHOOK">Webhook</option>
-            </select>
-            <input
-              placeholder="URL"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-            />
-            <select
-              value={autenticacao}
-              onChange={(e) => setAutenticacao(e.target.value)}
-            >
-              <option value="NENHUMA">Nenhuma</option>
-              <option value="BASIC">Basic</option>
-              <option value="BEARER">Bearer</option>
-              <option value="OAUTH2">OAuth2</option>
-            </select>
-            <input
-              placeholder="Usuário"
-              value={usuario}
-              onChange={(e) => setUsuario(e.target.value)}
-            />
-            <input
-              type="password"
-              placeholder={
-                editandoId ? "Segredo (vazio mantém o atual)" : "Segredo"
-              }
-              value={segredo}
-              onChange={(e) => setSegredo(e.target.value)}
-            />
-            <input
-              placeholder="URL do token"
-              value={tokenUrl}
-              onChange={(e) => setTokenUrl(e.target.value)}
-            />
-            <input
-              placeholder="Escopo"
-              value={escopo}
-              onChange={(e) => setEscopo(e.target.value)}
-            />
-            <textarea
-              placeholder="Mapeamento"
-              value={mapeamento}
-              onChange={(e) => setMapeamento(e.target.value)}
-            />
+            <label>
+              Tipo de coleta
+              <select value={tipo} onChange={(e) => alterarTipo(e.target.value)}>
+                <option value="API">API Basic</option>
+                <option value="WEBHOOK">Webhook</option>
+              </select>
+            </label>
+
+            {tipo === "API" && (
+              <>
+                <input
+                  placeholder="URL da API"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  required
+                />
+
+                <input
+                  placeholder="Usuário"
+                  value={usuario}
+                  onChange={(e) => setUsuario(e.target.value)}
+                  required
+                />
+
+                <input
+                  type="password"
+                  placeholder={
+                    editandoId
+                      ? "Segredo (vazio mantém o atual)"
+                      : "Segredo"
+                  }
+                  value={segredo}
+                  onChange={(e) => setSegredo(e.target.value)}
+                  required={!editandoId}
+                />
+
+                <textarea
+                  placeholder="Mapeamento JSON"
+                  value={mapeamento}
+                  onChange={(e) => setMapeamento(e.target.value)}
+                  required
+                />
+              </>
+            )}
+
+            {tipo === "WEBHOOK" && (
+              <p>
+                O endereço do webhook será exibido na lista após salvar a
+                integração.
+              </p>
+            )}
+
             <label>
               <input
                 type="checkbox"
@@ -272,7 +292,7 @@ function Integracoes() {
           <thead>
             <tr>
               <th>Tipo</th>
-              <th>URL</th>
+              <th>URL ou endpoint</th>
               <th>Autenticação</th>
               <th>Usuário</th>
               <th>Status</th>
@@ -282,16 +302,18 @@ function Integracoes() {
           <tbody>
             {integracoes.map((integracao) => (
               <tr key={integracao.id}>
-                <td>{integracao.tipo}</td>
-                <td>{integracao.url || "—"}</td>
-                <td>{integracao.autenticacao || "—"}</td>
-                <td>{integracao.usuario || "—"}</td>
+                <td>{integracao.tipo === "API" ? "API Basic" : "Webhook"}</td>
+                <td>
+                  {integracao.tipo === "WEBHOOK"
+                    ? endpointWebhook(integracao)
+                    : integracao.url || "—"}
+                </td>
+                <td>{integracao.tipo === "API" ? "Basic" : "—"}</td>
+                <td>{integracao.tipo === "API" ? integracao.usuario || "—" : "—"}</td>
                 <td>{integracao.ativo ? "Ativa" : "Inativa"}</td>
                 <td>
                   <button onClick={() => editar(integracao)}>Editar</button>
-                  <button onClick={() => excluir(integracao.id)}>
-                    Excluir
-                  </button>
+                  <button onClick={() => excluir(integracao.id)}>Excluir</button>
                 </td>
               </tr>
             ))}

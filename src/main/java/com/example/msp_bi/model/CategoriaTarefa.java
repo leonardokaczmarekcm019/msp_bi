@@ -10,13 +10,20 @@ import jakarta.persistence.ManyToOne;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity 
+@Getter
+@Setter
 public class CategoriaTarefa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = true)
+    private String idExterno;
 
     @NotBlank(message = "O nome é obrigatório")
     @Size (max = 50, message = "O nome deve ter até 50 caracteres")

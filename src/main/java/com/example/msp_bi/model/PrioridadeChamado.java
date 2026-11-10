@@ -7,8 +7,12 @@ import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import jakarta.persistence.Entity;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity 
+@Getter
+@Setter
 public class PrioridadeChamado {
 
     @Id
@@ -20,8 +24,7 @@ public class PrioridadeChamado {
     @Column(nullable = false)
     private String nome;
 
-    @NotBlank(message = "A descrição é obrigatória")
-    @Size (max = 100, message = "A descrição deve ter até 100 caracteres")
+    @Size(max = 100, message = "A descrição deve ter até 100 caracteres")
     @Column(nullable = true)
     private String descricao;   
     

@@ -3,8 +3,13 @@ import Usuarios from "./Usuarios";
 import Organizacoes from "./Organizacoes";
 import FontesDados from "./FontesDados";
 import Integracoes from "./Integracoes";
+import Geral from "./Geral";
 
-function Admin() {
+type AdminProps = {
+  autorizacao: string;
+};
+
+function Admin({ autorizacao }: AdminProps) {
   const [aba, setAba] = useState("usuarios");
 
   return (
@@ -12,6 +17,12 @@ function Admin() {
       <h1>Administração</h1>
 
       <nav>
+        <button
+          className={aba === "geral" ? "aba ativa" : "aba"}
+          onClick={() => setAba("geral")}
+        >
+          Geral
+        </button>
         <button
           className={aba === "usuarios" ? "aba ativa" : "aba"}
           onClick={() => setAba("usuarios")}
@@ -38,10 +49,11 @@ function Admin() {
         </button>
       </nav>
 
-      {aba === "usuarios" && <Usuarios />}
-      {aba === "organizacoes" && <Organizacoes />}
-      {aba === "fontes" && <FontesDados />}
-      {aba === "integracoes" && <Integracoes />}
+      {aba === "geral" && <Geral autorizacao={autorizacao} />}
+      {aba === "usuarios" && <Usuarios autorizacao={autorizacao} />}
+      {aba === "organizacoes" && <Organizacoes autorizacao={autorizacao} />}
+      {aba === "fontes" && <FontesDados autorizacao={autorizacao} />}
+      {aba === "integracoes" && <Integracoes autorizacao={autorizacao} />}
     </div>
   );
 }

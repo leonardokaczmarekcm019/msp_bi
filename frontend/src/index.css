@@ -4,13 +4,12 @@
   background: #f3f4f6;
   color-scheme: light;
 }
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   text-align: center;
 }
-
-#root {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-* { box-sizing: border-box; }

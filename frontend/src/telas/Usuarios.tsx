@@ -1,4 +1,5 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { mensagemErro, mensagemExcecao, requisicao } from "../api";
 
 type TipoUsuario = {
   id: number;
@@ -9,12 +10,12 @@ type Usuario = {
   id: number;
   nome: string;
   email: string;
-  numero: string;
+  numero: string | null;
   ativo: boolean;
   tipoUsuario: TipoUsuario | null;
 };
 
-function Usuarios() {
+function Usuarios({ autorizacao }: { autorizacao: string }) {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [tipos, setTipos] = useState<TipoUsuario[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -28,40 +29,31 @@ function Usuarios() {
   const [tipoId, setTipoId] = useState("");
   const [ativo, setAtivo] = useState(true);
 
-  async function carregar() {
-    try {
-      const resposta = await fetch("/api/usuarios");
+  const carregar = useCallback(() => {
+    requisicao("/api/usuarios", autorizacao)
+      .then((resposta) => {
+        if (!resposta.ok) throw new Error();
+        return resposta.json();
+      })
+      .then(setUsuarios)
+      .catch(() => setErro("Não foi possível carregar os usuários."))
+      .finally(() => setCarregando(false));
+  }, [autorizacao]);
 
-      if (!resposta.ok) {
-        throw new Error();
-      }
-
-      setUsuarios(await resposta.json());
-    } catch {
-      setErro("Não foi possível carregar os usuários.");
-    } finally {
-      setCarregando(false);
-    }
-  }
-
-  async function carregarTipos() {
-    try {
-      const resposta = await fetch("/api/tipos-usuario");
-
-      if (!resposta.ok) {
-        throw new Error();
-      }
-
-      setTipos(await resposta.json());
-    } catch {
-      setErro("Não foi possível carregar os tipos de usuário.");
-    }
-  }
+  const carregarTipos = useCallback(() => {
+    requisicao("/api/tipos-usuario", autorizacao)
+      .then((resposta) => {
+        if (!resposta.ok) throw new Error();
+        return resposta.json();
+      })
+      .then(setTipos)
+      .catch(() => setErro("Não foi possível carregar os tipos de usuário."));
+  }, [autorizacao]);
 
   useEffect(() => {
     carregar();
     carregarTipos();
-  }, []);
+  }, [carregar, carregarTipos]);
 
   function limparFormulario() {
     setEditandoId(null);
@@ -85,26 +77,29 @@ function Usuarios() {
 
     const url = editandoId ? `/api/usuarios/${editandoId}` : "/api/usuarios";
 
-    const resposta = await fetch(url, {
-      method: editandoId ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        nome,
-        email,
-        numero,
-        tipoUsuario: tipoId ? { id: Number(tipoId) } : null,
-        ativo,
-      }),
-    });
+    try {
+      const resposta = await requisicao(url, autorizacao, {
+        method: editandoId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nome,
+          email,
+          numero: numero || null,
+          tipoUsuario: tipoId ? { id: Number(tipoId) } : null,
+          ativo,
+        }),
+      });
 
-    if (!resposta.ok) {
-      const dados = await resposta.json();
-      setErro(dados.errors?.join(", ") || "Erro ao salvar.");
-      return;
+      if (!resposta.ok) {
+        setErro(await mensagemErro(resposta, "Erro ao salvar"));
+        return;
+      }
+
+      limparFormulario();
+      carregar();
+    } catch (erro) {
+      setErro(mensagemExcecao(erro));
     }
-
-    limparFormulario();
-    carregar();
   }
 
   function editar(usuario: Usuario) {
@@ -112,7 +107,7 @@ function Usuarios() {
     setEditandoId(usuario.id);
     setNome(usuario.nome);
     setEmail(usuario.email);
-    setNumero(usuario.numero);
+    setNumero(usuario.numero ?? "");
     setTipoId(usuario.tipoUsuario ? String(usuario.tipoUsuario.id) : "");
     setAtivo(usuario.ativo);
     setModalAberto(true);
@@ -125,16 +120,20 @@ function Usuarios() {
 
     setErro("");
 
-    const resposta = await fetch(`/api/usuarios/${id}`, {
-      method: "DELETE",
-    });
+    try {
+      const resposta = await requisicao(`/api/usuarios/${id}`, autorizacao, {
+        method: "DELETE",
+      });
 
-    if (!resposta.ok) {
-      setErro("Não foi possível excluir. Ele pode estar em uso por uma tarefa.");
-      return;
+      if (!resposta.ok) {
+        setErro(await mensagemErro(resposta, "Não foi possível excluir o usuário"));
+        return;
+      }
+
+      carregar();
+    } catch (erro) {
+      setErro(mensagemExcecao(erro));
     }
-
-    carregar();
   }
 
   return (
@@ -164,16 +163,17 @@ function Usuarios() {
               placeholder="Número"
               value={numero}
               onChange={(e) => setNumero(e.target.value)}
-              required
             />
-            <select value={tipoId} onChange={(e) => setTipoId(e.target.value)}>
-              <option value="">Sem tipo de usuário</option>
-              {tipos.map((tipo) => (
-                <option key={tipo.id} value={tipo.id}>
-                  {tipo.nome}
-                </option>
-              ))}
-            </select>
+            {editandoId !== null && (
+              <select value={tipoId} onChange={(e) => setTipoId(e.target.value)}>
+                <option value="">Sem tipo de usuário</option>
+                {tipos.map((tipo) => (
+                  <option key={tipo.id} value={tipo.id}>
+                    {tipo.nome}
+                  </option>
+                ))}
+              </select>
+            )}
             <label>
               <input
                 type="checkbox"

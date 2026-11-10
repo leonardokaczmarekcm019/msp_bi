@@ -1,6 +1,9 @@
 package com.example.msp_bi.model;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import java.util.Date;
@@ -11,11 +14,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 
 @Entity
+@Getter
+@Setter
 public class Alerta {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = true)
+    private String idExterno;
 
     @NotBlank(message = "O campo mensagem é obrigatório")
     @Size(max = 250, message = "A mensagem deve ter até 250 caracteres")
@@ -31,11 +39,11 @@ public class Alerta {
     @Column(nullable = true)
     private String severidade;
 
-    @NotBlank(message = "O campo data é obrigatório")
+    @NotNull(message = "O campo data é obrigatório")
     @Column(nullable = false)
     private Date data;
 
-    @NotBlank(message = "O status da notificação é obrigatório")
+    @NotNull(message = "O status da notificação é obrigatório")
     @Column(nullable = false)
     private Boolean notificacao;
 

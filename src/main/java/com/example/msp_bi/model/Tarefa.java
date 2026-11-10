@@ -20,6 +20,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 @Entity
@@ -33,6 +34,9 @@ public class Tarefa {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = true)
+    private String idExterno;
 
     @NotBlank(message = "O campo nome é obrigatório")
     @Size(max = 50, message = "O nome deve ter até 50 caracteres")
@@ -53,7 +57,7 @@ public class Tarefa {
     @Column(nullable = true)
     private Double porcentagem_progresso;
 
-    @NotBlank(message = "O campo data de criação é obrigatório")
+    @NotNull(message = "O campo data de criação é obrigatório")
     @Column(nullable = false)
     private Date data_criacao;
     

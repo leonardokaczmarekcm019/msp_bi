@@ -41,9 +41,7 @@ public class Usuario {
     @Column(nullable = false, length = 100)
     private String email;
 
-    @NotBlank(message = "O número é obrigatório")
-    @Size ( max = 50, message = "O número deve ter 50 caracteres")
-    @Column(nullable = false, length = 15) 
+    @Column(nullable = true) 
     private String numero;
 
     @NotNull(message = "O status é obrigatório")

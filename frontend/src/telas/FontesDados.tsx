@@ -1,4 +1,5 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { mensagemErro, mensagemExcecao, requisicao } from "../api";
 
 type Organizacao = {
   id: number;
@@ -14,7 +15,7 @@ type FonteDados = {
   organizacao: Organizacao | null;
 };
 
-function FontesDados() {
+function FontesDados({ autorizacao }: { autorizacao: string }) {
   const [fontes, setFontes] = useState<FonteDados[]>([]);
   const [organizacoes, setOrganizacoes] = useState<Organizacao[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -28,40 +29,31 @@ function FontesDados() {
   const [organizacaoId, setOrganizacaoId] = useState("");
   const [ativo, setAtivo] = useState(true);
 
-  async function carregar() {
-    try {
-      const resposta = await fetch("/api/fontes-dados");
+  const carregar = useCallback(() => {
+    requisicao("/api/fontes-dados", autorizacao)
+      .then((resposta) => {
+        if (!resposta.ok) throw new Error();
+        return resposta.json();
+      })
+      .then(setFontes)
+      .catch(() => setErro("Não foi possível carregar as fontes de dados."))
+      .finally(() => setCarregando(false));
+  }, [autorizacao]);
 
-      if (!resposta.ok) {
-        throw new Error();
-      }
-
-      setFontes(await resposta.json());
-    } catch {
-      setErro("Não foi possível carregar as fontes de dados.");
-    } finally {
-      setCarregando(false);
-    }
-  }
-
-  async function carregarOrganizacoes() {
-    try {
-      const resposta = await fetch("/api/organizacoes");
-
-      if (!resposta.ok) {
-        throw new Error();
-      }
-
-      setOrganizacoes(await resposta.json());
-    } catch {
-      setErro("Não foi possível carregar as organizações.");
-    }
-  }
+  const carregarOrganizacoes = useCallback(() => {
+    requisicao("/api/organizacoes", autorizacao)
+      .then((resposta) => {
+        if (!resposta.ok) throw new Error();
+        return resposta.json();
+      })
+      .then(setOrganizacoes)
+      .catch(() => setErro("Não foi possível carregar as organizações."));
+  }, [autorizacao]);
 
   useEffect(() => {
     carregar();
     carregarOrganizacoes();
-  }, []);
+  }, [carregar, carregarOrganizacoes]);
 
   function limparFormulario() {
     setEditandoId(null);
@@ -87,26 +79,29 @@ function FontesDados() {
       ? `/api/fontes-dados/${editandoId}`
       : "/api/fontes-dados";
 
-    const resposta = await fetch(endereco, {
-      method: editandoId ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        plataforma,
-        tipoFonte,
-        url: url || null,
-        organizacao: organizacaoId ? { id: Number(organizacaoId) } : null,
-        ativo,
-      }),
-    });
+    try {
+      const resposta = await requisicao(endereco, autorizacao, {
+        method: editandoId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plataforma,
+          tipoFonte,
+          url: url || null,
+          organizacao: organizacaoId ? { id: Number(organizacaoId) } : null,
+          ativo,
+        }),
+      });
 
-    if (!resposta.ok) {
-      const dados = await resposta.json();
-      setErro(dados.errors?.join(", ") || "Erro ao salvar.");
-      return;
+      if (!resposta.ok) {
+        setErro(await mensagemErro(resposta, "Erro ao salvar"));
+        return;
+      }
+
+      limparFormulario();
+      carregar();
+    } catch (erro) {
+      setErro(mensagemExcecao(erro));
     }
-
-    limparFormulario();
-    carregar();
   }
 
   function editar(fonte: FonteDados) {
@@ -127,16 +122,20 @@ function FontesDados() {
 
     setErro("");
 
-    const resposta = await fetch(`/api/fontes-dados/${id}`, {
-      method: "DELETE",
-    });
+    try {
+      const resposta = await requisicao(`/api/fontes-dados/${id}`, autorizacao, {
+        method: "DELETE",
+      });
 
-    if (!resposta.ok) {
-      setErro("Não foi possível excluir.");
-      return;
+      if (!resposta.ok) {
+        setErro(await mensagemErro(resposta, "Não foi possível excluir a fonte de dados"));
+        return;
+      }
+
+      carregar();
+    } catch (erro) {
+      setErro(mensagemExcecao(erro));
     }
-
-    carregar();
   }
 
   return (

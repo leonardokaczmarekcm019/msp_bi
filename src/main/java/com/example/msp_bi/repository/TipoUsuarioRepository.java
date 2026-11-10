@@ -1,8 +1,13 @@
 package com.example.msp_bi.repository;
 
-import com.example.msp_bi.model.TipoUsuario;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface TipoUsuarioRepository extends JpaRepository<TipoUsuario, Long> {
+import com.example.msp_bi.model.TipoUsuario;
 
+public interface TipoUsuarioRepository
+        extends JpaRepository<TipoUsuario, Long> {
+
+    Optional<TipoUsuario> findByNome(String nome);
 }

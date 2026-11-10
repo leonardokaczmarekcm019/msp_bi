@@ -12,12 +12,12 @@ import com.example.msp_bi.repository.IntegracaoRepository;
 public class WebhookService {
 
     private final IntegracaoRepository integracaoRepository;
-    private final GravacaoService gravacaoService;
+    private final GravacaoChamadoService gravacaoChamadoService;
 
     public WebhookService(IntegracaoRepository integracaoRepository,
-            GravacaoService gravacaoService) {
+            GravacaoChamadoService gravacaoChamadoService) {
         this.integracaoRepository = integracaoRepository;
-        this.gravacaoService = gravacaoService;
+        this.gravacaoChamadoService = gravacaoChamadoService;
     }
 
     // retorna uma mensagem de erro, ou null se deu certo
@@ -37,7 +37,7 @@ public class WebhookService {
             return "Integração, fonte ou organização inativa";
         }
 
-        if (!gravacaoService.salvarChamado(fonte, dados)) {
+        if (!gravacaoChamadoService.salvarChamado(fonte, dados)) {
             return "Dados inválidos";
         }
 

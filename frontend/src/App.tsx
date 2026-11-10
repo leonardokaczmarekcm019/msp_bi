@@ -7,15 +7,20 @@ import "./App.css";
 
 function App() {
   const [tela, setTela] = useState("login");
-  const [email, setEmail] = useState("");
+  const [autorizacao, setAutorizacao] = useState("");
+  const [ehAdmin, setEhAdmin] = useState(false);
 
-  function entrar(emailDigitado: string) {
-    setEmail(emailDigitado);
+  function entrar(cabecalho: string, gerente: boolean) {
+    setAutorizacao(cabecalho);
+    setEhAdmin(gerente);
     setTela("dashboard");
   }
 
-  // E-mails que começam com "admin" considerados como administradores
-  const ehAdmin = email.toLowerCase().startsWith("admin");
+  function sair() {
+    setAutorizacao("");
+    setTela("login");
+    setEhAdmin(false);
+  }
 
   if (tela === "login") {
     return <Login aoEntrar={entrar} />;
@@ -24,16 +29,16 @@ function App() {
   return (
     <div>
       <nav className="menu">
-        <button onClick={() => setTela("dashboard")}>Dashboard</button>
-        <button onClick={() => setTela("relatorio")}>Relatório</button>
-        {ehAdmin && <button onClick={() => setTela("admin")}>Admin</button>}
-        <button onClick={() => setTela("login")}>Sair</button>
+        <button className={tela === "dashboard" ? "ativo" : ""} onClick={() => setTela("dashboard")}>Dashboard</button>
+        <button className={tela === "relatorio" ? "ativo" : ""} onClick={() => setTela("relatorio")}>Relatório</button>
+        {ehAdmin && <button className={tela === "admin" ? "ativo" : ""} onClick={() => setTela("admin")}>Admin</button>}
+        <button onClick={sair}>Sair</button>
       </nav>
 
       <main>
-        {tela === "dashboard" && <Dashboard />}
-        {tela === "relatorio" && <Relatorio />}
-        {tela === "admin" && ehAdmin && <Admin />}
+        {tela === "dashboard" && autorizacao && <Dashboard autorizacao={autorizacao} />}
+        {tela === "relatorio" && autorizacao && <Relatorio autorizacao={autorizacao} />}
+        {tela === "admin" && autorizacao && ehAdmin && (<Admin autorizacao={autorizacao} />)}
       </main>
     </div>
   );

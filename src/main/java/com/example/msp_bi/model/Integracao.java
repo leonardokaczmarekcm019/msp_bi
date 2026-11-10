@@ -32,8 +32,7 @@ public class Integracao {
     public enum Autenticacao {
         NENHUMA,
         BASIC,
-        BEARER,
-        OAUTH2
+        BEARER
     }
 
     @Id
