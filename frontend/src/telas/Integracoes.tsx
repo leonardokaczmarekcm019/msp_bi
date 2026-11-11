@@ -3,6 +3,8 @@ import { mensagemErro, mensagemExcecao, requisicao } from "../api";
 
 type TipoIntegracao = "API" | "WEBHOOK";
 
+type Autenticacao = "NENHUMA" | "BASIC" | "BEARER";
+
 type FonteDados = {
   id: number;
   plataforma: string;
@@ -31,6 +33,7 @@ function Integracoes({ autorizacao }: { autorizacao: string }) {
 
   const [tipo, setTipo] = useState<TipoIntegracao>("API");
   const [url, setUrl] = useState("");
+  const [autenticacao, setAutenticacao] = useState<Autenticacao>("NENHUMA");
   const [usuario, setUsuario] = useState("");
   const [segredo, setSegredo] = useState("");
   const [mapeamento, setMapeamento] = useState("");
@@ -92,6 +95,7 @@ function Integracoes({ autorizacao }: { autorizacao: string }) {
     setEditandoId(null);
     setTipo("API");
     setUrl("");
+    setAutenticacao("NENHUMA");
     setUsuario("");
     setSegredo("");
     setMapeamento("");
@@ -120,9 +124,13 @@ function Integracoes({ autorizacao }: { autorizacao: string }) {
         body: JSON.stringify({
           tipo,
           url: tipo === "API" ? url || null : null,
-          autenticacao: tipo === "API" ? "BASIC" : null,
-          usuario: tipo === "API" ? usuario || null : null,
-          segredo: tipo === "API" ? segredo || null : null,
+          autenticacao: tipo === "API" ? autenticacao : null,
+          usuario:
+            tipo === "API" && autenticacao === "BASIC" ? usuario || null : null,
+          segredo:
+            tipo === "API" && autenticacao !== "NENHUMA"
+              ? segredo || null
+              : null,
           mapeamento: tipo === "API" ? mapeamento || null : null,
           ativo,
         }),
@@ -145,6 +153,11 @@ function Integracoes({ autorizacao }: { autorizacao: string }) {
     setEditandoId(integracao.id);
     setTipo(integracao.tipo);
     setUrl(integracao.url || "");
+    setAutenticacao(
+      integracao.autenticacao === "BASIC" || integracao.autenticacao === "BEARER"
+        ? integracao.autenticacao
+        : "NENHUMA",
+    );
     setUsuario(integracao.usuario || "");
     setSegredo("");
     setMapeamento(integracao.mapeamento || "");
@@ -210,7 +223,7 @@ function Integracoes({ autorizacao }: { autorizacao: string }) {
             <label>
               Tipo de coleta
               <select value={tipo} onChange={(e) => alterarTipo(e.target.value)}>
-                <option value="API">API Basic</option>
+                <option value="API">API</option>
                 <option value="WEBHOOK">Webhook</option>
               </select>
             </label>
@@ -224,24 +237,44 @@ function Integracoes({ autorizacao }: { autorizacao: string }) {
                   required
                 />
 
-                <input
-                  placeholder="Usuário"
-                  value={usuario}
-                  onChange={(e) => setUsuario(e.target.value)}
-                  required
-                />
+                <label>
+                  Autenticação
+                  <select
+                    value={autenticacao}
+                    onChange={(e) =>
+                      setAutenticacao(e.target.value as Autenticacao)
+                    }
+                  >
+                    <option value="NENHUMA">Nenhuma</option>
+                    <option value="BASIC">Basic (usuário e senha)</option>
+                    <option value="BEARER">Bearer (token)</option>
+                  </select>
+                </label>
 
-                <input
-                  type="password"
-                  placeholder={
-                    editandoId
-                      ? "Segredo (vazio mantém o atual)"
-                      : "Segredo"
-                  }
-                  value={segredo}
-                  onChange={(e) => setSegredo(e.target.value)}
-                  required={!editandoId}
-                />
+                {autenticacao === "BASIC" && (
+                  <input
+                    placeholder="Usuário"
+                    value={usuario}
+                    onChange={(e) => setUsuario(e.target.value)}
+                    required
+                  />
+                )}
+
+                {autenticacao !== "NENHUMA" && (
+                  <input
+                    type="password"
+                    placeholder={
+                      editandoId
+                        ? "Segredo (vazio mantém o atual)"
+                        : autenticacao === "BEARER"
+                          ? "Token"
+                          : "Segredo"
+                    }
+                    value={segredo}
+                    onChange={(e) => setSegredo(e.target.value)}
+                    required={!editandoId}
+                  />
+                )}
 
                 <textarea
                   placeholder="Mapeamento JSON"

@@ -50,8 +50,14 @@ function Organizacoes({ autorizacao }: OrganizacoesProps) {
             .catch(() => setErro("Não foi possível carregar as cores das organizações."));
     }, [autorizacao]);
 
-    async function alterarCor(id: number, cor: string) {
-        setCores((atuais) => ({ ...atuais, [id]: cor }));
+    async function salvarCor(id: number, cor: string) {
+        if (!/^#[0-9a-fA-F]{6}$/.test(cor)) {
+            setErro("Cor inválida. Use o formato #RRGGBB.");
+            carregarCores();
+            return;
+        }
+
+        setErro("");
 
         try {
             const resposta = await requisicao(`/api/organizacoes/${id}/cor`, autorizacao, {
@@ -238,9 +244,18 @@ function Organizacoes({ autorizacao }: OrganizacoesProps) {
                                 <td>{organizacao.ativo ? "Ativa" : "Inativa"}</td>
                                 <td>
                                     <input
-                                        type="color"
+                                        type="text"
                                         value={cores[organizacao.id] || "#3b82f6"}
-                                        onChange={(e) => alterarCor(organizacao.id, e.target.value)}
+                                        onChange={(e) =>
+                                            setCores((atuais) => ({
+                                                ...atuais,
+                                                [organizacao.id]: e.target.value,
+                                            }))
+                                        }
+                                        onBlur={(e) => salvarCor(organizacao.id, e.target.value)}
+                                        placeholder="#RRGGBB"
+                                        maxLength={7}
+                                        aria-label={`Cor de ${organizacao.nome} em hexadecimal`}
                                     />
                                 </td>
                                 <td>
